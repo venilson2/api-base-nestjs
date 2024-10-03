@@ -18,7 +18,7 @@ export class AuthService {
     
     if (!user) throw new NotFoundException('User not found');
 
-    const passwordMatch = await bcrypt.compare(user.password, userDTO.password);
+    const passwordMatch = await bcrypt.compare(userDTO.password, user.password);
 
     if (!passwordMatch) throw new UnauthorizedException('Invalid credentials');
 
@@ -31,8 +31,6 @@ export class AuthService {
     const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
     const refresh_token = await this.jwtService.signAsync(payload, { expiresIn: '7d' });
 
-    const id = user.id;
-    
     this.usersService.updateRefreshToken(user.id, refresh_token);
 
     return {

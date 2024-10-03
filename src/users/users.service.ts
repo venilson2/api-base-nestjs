@@ -19,7 +19,7 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     createUserDto.password = hashedPassword;
-
+  
     return this.userModel.create(createUserDto);
   }
 
