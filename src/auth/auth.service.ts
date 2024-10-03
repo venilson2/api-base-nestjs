@@ -3,16 +3,18 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private usersService: UsersService
   ) {}
 
   async signIn(userDTO: SignInDto): Promise<LoginResponseDto> {
 
-    const user = await this.userModel.findOne({ where: { email: userDTO.email } });
+    const user = await this.usersService.findEmail(userDTO.email);
 
     if (!user) throw new NotFoundException('User not found');
 
@@ -23,7 +25,7 @@ export class AuthService {
     const payload = { 
       id: user.id, 
       email: user.email, 
-      role: user.role
+      plan: user.plan
     };
 
     const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
@@ -31,43 +33,37 @@ export class AuthService {
 
     const id = user.id;
     
-    await this.userModel.update(
-      { refresh_token: refresh_token },
-      { where: { id } }
-    );
+    this.usersService.updateRefreshToken(user.id, refresh_token);
 
     return {
       access_token,
       refresh_token,
       user: {
         id: user.id,
-        username: user.username,
-        role: user.role,
+        email: user.email,
+        plan: user.plan,
       },
       expires_in: 3600
     };
   }
 
   async refresh(refreshToken: string): Promise<LoginResponseDto> {
-    const userModel = await this.userModel.findOne({ where: { refresh_token: refreshToken } });
+    const user = await this.usersService.findByRefreshToken(refreshToken);
 
-    if (!userModel) throw new UnauthorizedException('Invalid refresh token');
+    if (!user) throw new UnauthorizedException('Invalid refresh token');
 
-    const payload = { id: userModel.id, username: userModel.username };
+    const payload = { id: user.id, email: user.email };
     const access_token = await this.jwtService.signAsync(payload, { expiresIn: '1h' });
     const new_refresh_token = await this.jwtService.signAsync(payload, { expiresIn: '7d' });
 
-    await this.userModel.update(
-      { refresh_token: new_refresh_token },
-      { where: { userModel.id } }
-    );
+    this.usersService.updateRefreshToken(user.id, new_refresh_token);
     return {
       access_token,
       refresh_token: new_refresh_token,
       user: {
-        id: userModel.id,
-        email: userModel.email,
-        roles: userModel.roles,
+        id: user.id,
+        email: user.email,
+        plan: user.plan,
       },
       expires_in: 3600
     };

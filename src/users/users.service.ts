@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserModel } from './models/user.model';
 import { InjectModel } from '@nestjs/sequelize';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,10 @@ export class UsersService {
     return this.userModel.findByPk(id);
   }
 
+  findEmail(email: string) {
+    return this.userModel.findOne({where: {email}});
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
     return this.userModel.update(updateUserDto, {
       where: { id } ,
@@ -32,5 +37,16 @@ export class UsersService {
 
   remove(id: number) {
     return this.userModel.destroy({ where: { id } });
+  }
+
+  updateRefreshToken(id: string, refreshToken: string) {
+    this.userModel.update(
+      { refreshToken },
+      { where: { id } }
+    );
+  }
+
+  findByRefreshToken(refreshToken: string): Promise<UserEntity | null> {
+    return this.userModel.findOne({ where: { refreshToken } });
   }
 }
