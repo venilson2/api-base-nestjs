@@ -15,12 +15,12 @@ export class AuthService {
   async signIn(userDTO: SignInDto): Promise<LoginResponseDto> {
 
     const user = await this.usersService.findEmail(userDTO.email);
-
+    
     if (!user) throw new NotFoundException('User not found');
 
     const passwordMatch = await bcrypt.compare(user.password, userDTO.password);
 
-    if (!passwordMatch) throw new UnauthorizedException();
+    if (!passwordMatch) throw new UnauthorizedException('Invalid credentials');
 
     const payload = { 
       id: user.id, 

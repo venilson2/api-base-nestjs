@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserModel } from './models/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UserEntity } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -12,7 +13,13 @@ export class UsersService {
     private readonly userModel: typeof UserModel,
   ) {}
   
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
+
+    const {password} = createUserDto
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    createUserDto.password = hashedPassword;
+
     return this.userModel.create(createUserDto);
   }
 
@@ -28,7 +35,13 @@ export class UsersService {
     return this.userModel.findOne({where: {email}});
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
+
+    const {password} = updateUserDto
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    updateUserDto.password = hashedPassword;
+
     return this.userModel.update(updateUserDto, {
       where: { id } ,
       returning: true
