@@ -32,7 +32,7 @@ export class UserModel extends Model<UserModel> {
   @Column({
     type: DataType.ENUM,
     values: [UserPlan.Free, UserPlan.Basic, UserPlan.Premium],
-    allowNull: false,
+    defaultValue: UserPlan.Free,
   })
   plan: UserPlan;
 

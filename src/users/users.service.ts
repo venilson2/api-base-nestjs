@@ -20,22 +20,22 @@ export class UsersService {
     return this.userModel.findAll();
   }
 
-  findOne(id: number) {
-    return this.userModel.findByPk(id);
+  findOne(id: string) {
+    return this.userModel.findOne({where: {id}});
   }
 
   findEmail(email: string) {
     return this.userModel.findOne({where: {email}});
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: string, updateUserDto: UpdateUserDto) {
     return this.userModel.update(updateUserDto, {
       where: { id } ,
       returning: true
     });
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.userModel.destroy({ where: { id } });
   }
 

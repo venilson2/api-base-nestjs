@@ -28,8 +28,8 @@ import { UsersModule } from './users/users.module';
       sync: {
         alter: true,
       },
-      logging: true,
-      benchmark: true,
+      logging: false,
+      benchmark: false,
       schema: process.env.SCHEMA,
       timezone: 'utc',
     }),
